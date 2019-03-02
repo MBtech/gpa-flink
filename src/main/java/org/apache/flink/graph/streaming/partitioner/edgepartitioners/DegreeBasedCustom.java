@@ -8,8 +8,9 @@ import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.graph.Edge;
-import org.apache.flink.hadoop.shaded.com.google.common.collect.HashBasedTable;
-import org.apache.flink.hadoop.shaded.com.google.common.collect.Table;
+import org.apache.flink.shaded.guava18.com.google.common.collect.HashBasedTable;
+import org.apache.flink.shaded.guava18.com.google.common.collect.Table;
+
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.types.NullValue;
@@ -59,6 +60,7 @@ public class DegreeBasedCustom {
 	private static class DegreeBased<K, EV, T> implements Partitioner<T> {
 		private static final long serialVersionUID = 1L;
 		SampleKeySelector<T, ?> keySelector;
+
 		private final Table<Long, Long, Long> degree = HashBasedTable.create();   //for <partition.no, vertexId, Degree>
 		private final HashMap<Long, List<Tuple2<Long, Long>>> result = new HashMap<>();
 		private final List<Double> load = new ArrayList<>(); //for load of each partiton

@@ -14,7 +14,9 @@ import org.apache.flink.types.NullValue;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 /**
@@ -102,8 +104,6 @@ public class Hdrf {
 				this.currentState = new StoredState(k);
 				this.lamda = lamda;
 				this.k=k;
-
-
 			}
 
 			@Override
@@ -153,6 +153,8 @@ public class Hdrf {
 						bal = 0;
 					}
 					double SCORE_m = fu + fv + lamda * bal;
+//					System.out.printf("factors fu=%.2f, fv=%.2f, bal=%.2f\n", fu, fv, bal);
+//					System.out.printf("For partition %d Score is: %.2f\n", m, SCORE_m);
 					if (SCORE_m < 0) {
 						System.out.println("ERRORE: SCORE_m<0");
 						System.out.println("fu: " + fu);
@@ -182,6 +184,8 @@ public class Hdrf {
 				int choice = r.nextInt(candidates.size());
 				machine_id = candidates.get(choice);
 
+
+//				System.out.printf("Selected Partition %d\n", machine_id);
 
 				if (currentState.getClass() == StoredState.class) {
 					StoredState cord_state = (StoredState) currentState;
@@ -230,7 +234,7 @@ public class Hdrf {
 					   .map(new MapFunction<String, Edge<Long, NullValue>>() {
 						   @Override
 						   public Edge<Long, NullValue> map(String s) throws Exception {
-							   String[] fields = s.split("\\,");
+							   String[] fields = s.split("\t");
 							   long src = Long.parseLong(fields[0]);
 							   long trg = Long.parseLong(fields[1]);
 							   return new Edge<>(src, trg, NullValue.getInstance());

@@ -31,12 +31,13 @@ import org.apache.flink.graph.streaming.test.GraphStreamTestUtils;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.util.Collector;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TestSlice extends StreamingProgramTestBase {
+public class TestSlice extends AbstractTestBase{
 
 	private String resultPath;
 	private String expectedResult;
@@ -44,18 +45,12 @@ public class TestSlice extends StreamingProgramTestBase {
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-	@Override
-	protected void preSubmit() throws Exception {
-		resultPath = tempFolder.newFile().toURI().toString();
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(expectedResult, resultPath);
-	}
 
-	@Override
+	@Test
 	public void testProgram() throws Exception {
+		resultPath = tempFolder.newFile().toURI().toString();
+
 		testFoldNeighborsDefault();
 		testFoldNeighborsIn();
 		testFoldNeighborsAll();
@@ -65,6 +60,9 @@ public class TestSlice extends StreamingProgramTestBase {
 		testApplyOnNeighborsDefault();
 		testApplyOnNeighborsIn();
 		testApplyOnNeighborsAll();
+
+		compareResultsByLinesInMemory(expectedResult, resultPath);
+
 	}
 
 	public void testFoldNeighborsDefault() throws Exception {

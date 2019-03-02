@@ -8,6 +8,7 @@ package org.apache.flink.graph.streaming.util;
 	import org.apache.flink.streaming.runtime.streamrecord.LatencyMarker;
 	import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 	import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
+	import org.apache.flink.util.OutputTag;
 
 	import java.io.Serializable;
 	import java.util.List;
@@ -23,6 +24,11 @@ package org.apache.flink.graph.streaming.util;
 		@Override
 		public void emitWatermark(Watermark mark) {
 			list.add(mark);
+		}
+
+		@Override
+		public <X> void collect(OutputTag<X> outputTag, StreamRecord<X> streamRecord) {
+
 		}
 
 		@Override

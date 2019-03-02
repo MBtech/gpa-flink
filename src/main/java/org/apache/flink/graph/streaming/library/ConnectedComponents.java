@@ -125,7 +125,7 @@ public class ConnectedComponents<K extends Serializable, EV> extends WindowGraph
 		//	File file = new File("/Users/zainababbas/partitioning/gelly-streaming/count");
 
 			// if file doesnt exists, then create it
-			File file = new File("/Users/zainababbas/partitioning/gelly-streaming/count");
+			File file = new File("count");
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {

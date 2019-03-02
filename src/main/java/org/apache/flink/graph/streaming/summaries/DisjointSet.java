@@ -18,7 +18,7 @@
 
 package org.apache.flink.graph.streaming.summaries;
 
-import org.apache.flink.hadoop.shaded.com.google.common.collect.Lists;
+import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,7 +28,6 @@ import java.util.Set;
 
 
 public class DisjointSet<R extends Serializable> implements Serializable {
-
 	private static final long serialVersionUID = 1L;
 	private Map<R, R> matches;
     private Map<R, Integer> ranks;

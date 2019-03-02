@@ -23,15 +23,16 @@ import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.streaming.GraphStream;
 import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestUnion extends StreamingProgramTestBase {
+public class TestUnion extends AbstractTestBase {
 
 	private String resultPath;
 	private String expectedResult;
@@ -39,18 +40,10 @@ public class TestUnion extends StreamingProgramTestBase {
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-	@Override
-	protected void preSubmit() throws Exception {
+	@Test
+	public void testProgram() throws Exception {
 		resultPath = tempFolder.newFile().toURI().toString();
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(expectedResult, resultPath);
-	}
-
-	@Override
-	protected void testProgram() throws Exception {
 		     /*
 		 * Test union() with two simple graphs
 	     */
@@ -84,6 +77,9 @@ public class TestUnion extends StreamingProgramTestBase {
 				"3,5,35\n" +
 				"4,5,45\n" +
 				"5,1,51\n";
+
+		compareResultsByLinesInMemory(expectedResult, resultPath);
+
 	}
 
 }

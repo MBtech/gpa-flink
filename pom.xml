@@ -16,23 +16,32 @@
     </properties>
 
     <dependencies>
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.flink/flink-shaded-hadoop &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.flink</groupId>-->
+            <!--<artifactId>flink-shaded-hadoop2</artifactId>-->
+            <!--<version>1.7.2</version>-->
+            <!--<type>pom</type>-->
+        <!--</dependency>-->
+
+
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-gelly_2.10</artifactId>
-            <version>1.2.0</version>
+            <artifactId>flink-gelly_2.11</artifactId>
+            <version>1.7.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-java_2.10</artifactId>
-            <version>1.2.0</version>
+            <artifactId>flink-streaming-java_2.11</artifactId>
+            <version>1.7.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-java_2.10</artifactId>
+            <artifactId>flink-streaming-java_2.11</artifactId>
             <type>test-jar</type>
-            <version>1.2.0</version>
+            <version>1.7.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -45,8 +54,8 @@
 
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-test-utils_2.10</artifactId>
-            <version>1.2.0</version>
+            <artifactId>flink-test-utils_2.11</artifactId>
+            <version>1.7.2</version>
             <scope>test</scope>
         </dependency>
 

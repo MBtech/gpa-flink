@@ -7,13 +7,14 @@ import org.apache.flink.graph.streaming.library.BipartitenessCheck;
 import org.apache.flink.graph.streaming.summaries.Candidates;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NonBipartitnessCheckTest extends StreamingProgramTestBase {
+public class NonBipartitnessCheckTest extends AbstractTestBase {
 
 	public static final String NonBipartite_RESULT =
 			"(false,{})";
@@ -34,25 +35,20 @@ public class NonBipartitnessCheckTest extends StreamingProgramTestBase {
 		return edges;
 	}
 
-	@Override
-	protected void preSubmit() throws Exception {
-		setParallelism(1); //needed to ensure total ordering for windows
+
+	@Test
+	public void testProgram() throws Exception {
 		resultPath = getTempDirPath("output");
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(NonBipartite_RESULT, resultPath);
-	}
-
-	@Override
-	protected void testProgram() throws Exception {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		env.setParallelism(1);
 		DataStream<Edge<Long, NullValue>> edges = getGraphStream(env);
 		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges, env);
 		DataStream<Candidates> cc = graph.aggregate(new BipartitenessCheck<Long, NullValue>((long) 500));
 		cc.writeAsText(resultPath);
 		env.execute("Non Bipartiteness check");
+
+		compareResultsByLinesInMemory(NonBipartite_RESULT, resultPath);
 
 	}
 }

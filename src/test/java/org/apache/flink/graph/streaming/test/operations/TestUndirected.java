@@ -23,12 +23,13 @@ import org.apache.flink.graph.streaming.GraphStream;
 import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.graph.streaming.test.GraphStreamTestUtils;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TestUndirected extends StreamingProgramTestBase {
+public class TestUndirected extends AbstractTestBase {
 
 
 	private String resultPath;
@@ -37,18 +38,11 @@ public class TestUndirected extends StreamingProgramTestBase {
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-	@Override
-	protected void preSubmit() throws Exception {
+
+	@Test
+	public void testProgram() throws Exception {
 		resultPath = tempFolder.newFile().toURI().toString();
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(expectedResult, resultPath);
-	}
-
-	@Override
-	protected void testProgram() throws Exception {
 		     /*
 		 * Test undirected() with the sample graph
 	     */
@@ -73,5 +67,7 @@ public class TestUndirected extends StreamingProgramTestBase {
 				"5,4,45\n" +
 				"5,1,51\n" +
 				"1,5,51\n";
+
+		compareResultsByLinesInMemory(expectedResult, resultPath);
 	}
 }

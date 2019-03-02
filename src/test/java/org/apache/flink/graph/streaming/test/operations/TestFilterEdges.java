@@ -25,12 +25,13 @@ import org.apache.flink.graph.streaming.GraphStream;
 import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.graph.streaming.test.GraphStreamTestUtils;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TestFilterEdges extends StreamingProgramTestBase {
+public class TestFilterEdges extends AbstractTestBase {
 
 	private String resultPath;
 	private String expectedResult;
@@ -38,21 +39,16 @@ public class TestFilterEdges extends StreamingProgramTestBase {
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    @Override
-    protected void preSubmit() throws Exception {
-        resultPath = tempFolder.newFile().toURI().toString();
-    }
 
-    @Override
-    protected void postSubmit() throws Exception {
-        compareResultsByLinesInMemory(expectedResult, resultPath);
-    }
+    @Test
+    public void testProgram() throws Exception {
+		resultPath = tempFolder.newFile().toURI().toString();
 
-    @Override
-    protected void testProgram() throws Exception {
         testWithSimpleFilter();
         testWithDiscardFilter();
         testWithEmptyFilter();
+
+		compareResultsByLinesInMemory(expectedResult, resultPath);
     }
 
 	public void testWithSimpleFilter() throws Exception {

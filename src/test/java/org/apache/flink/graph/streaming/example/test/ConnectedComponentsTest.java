@@ -7,15 +7,16 @@ import org.apache.flink.graph.streaming.library.ConnectedComponents;
 import org.apache.flink.graph.streaming.summaries.DisjointSet;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
 import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConnectedComponentsTest extends StreamingProgramTestBase {
+public class ConnectedComponentsTest extends AbstractTestBase {
 	public static final String Connected_RESULT =
 			"1, 2, 3, 5\n" + "6, 7\n" +
 					"9 8\n";
@@ -54,15 +55,39 @@ public class ConnectedComponentsTest extends StreamingProgramTestBase {
 		Arrays.sort(result);
 		return result;
 	}
+//
+//	@Override
+//	protected void preSubmit() throws Exception {
+//		setParallelism(1); //needed to ensure total ordering for windows
+//
+//	}
+//
+//
+//	protected void postSubmit() throws Exception {
+//
+//		String expectedResultStr = Connected_RESULT;
+//		String[] excludePrefixes = new String[0];
+//		ArrayList<String> list = new ArrayList<String>();
+//		readAllResultLines(list, resultPath, excludePrefixes, false);
+//		String[] result = parser(list);
+//		String[] expected = expectedResultStr.isEmpty() ? new String[0] : expectedResultStr.split("\n");
+//		Arrays.sort(expected);
+//		Assert.assertEquals("Different number of lines in expected and obtained result.", expected.length, result.length);
+//	}
 
-	@Override
-	protected void preSubmit() throws Exception {
-		setParallelism(1); //needed to ensure total ordering for windows
+	@Test
+	public void testProgram() throws Exception {
 		resultPath = getTempDirPath("output");
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		DataStream<Edge<Long, NullValue>> edges = getGraphStream(env);
+		env.setParallelism(1);
+		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges, env);
+		DataStream<DisjointSet<Long>> cc = graph.aggregate(new ConnectedComponents<Long, NullValue>(5));
+		cc.writeAsText(resultPath);
+		env.execute("Streaming Connected ComponentsCheck");
+
+
 		String expectedResultStr = Connected_RESULT;
 		String[] excludePrefixes = new String[0];
 		ArrayList<String> list = new ArrayList<String>();
@@ -71,16 +96,6 @@ public class ConnectedComponentsTest extends StreamingProgramTestBase {
 		String[] expected = expectedResultStr.isEmpty() ? new String[0] : expectedResultStr.split("\n");
 		Arrays.sort(expected);
 		Assert.assertEquals("Different number of lines in expected and obtained result.", expected.length, result.length);
-	}
-
-	@Override
-	protected void testProgram() throws Exception {
-		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-		DataStream<Edge<Long, NullValue>> edges = getGraphStream(env);
-		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges, env);
-		DataStream<DisjointSet<Long>> cc = graph.aggregate(new ConnectedComponents<Long, NullValue>(5));
-		cc.writeAsText(resultPath);
-		env.execute("Streaming Connected ComponentsCheck");
 	}
 }
 

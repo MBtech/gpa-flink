@@ -26,12 +26,13 @@ import org.apache.flink.graph.streaming.GraphStream;
 import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.graph.streaming.test.GraphStreamTestUtils;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.util.StreamingProgramTestBase;
+import org.apache.flink.test.util.AbstractTestBase;
 import org.apache.flink.types.NullValue;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class TestMapEdges extends StreamingProgramTestBase {
+public class TestMapEdges extends AbstractTestBase {
 
 	private String resultPath;
 	private String expectedResult;
@@ -39,21 +40,16 @@ public class TestMapEdges extends StreamingProgramTestBase {
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 
-	@Override
-	protected void preSubmit() throws Exception {
-		resultPath = tempFolder.newFile().toURI().toString();
-	}
 
-	@Override
-	protected void postSubmit() throws Exception {
-		compareResultsByLinesInMemory(expectedResult, resultPath);
-	}
-
-	@Override
+	@Test
 	public void testProgram() throws Exception {
+		resultPath = tempFolder.newFile().toURI().toString();
+
 		testWithSameType();
 		testWithTupleType();
 		testChainedMaps();
+
+		compareResultsByLinesInMemory(expectedResult, resultPath);
 	}
 
 	public void testWithSameType() throws Exception {
