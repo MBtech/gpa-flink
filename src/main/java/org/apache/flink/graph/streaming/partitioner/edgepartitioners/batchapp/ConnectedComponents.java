@@ -7,9 +7,13 @@ import org.apache.flink.api.java.aggregation.Aggregations;
 import org.apache.flink.api.java.functions.FunctionAnnotation;
 import org.apache.flink.api.java.operators.DeltaIteration;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.Vertex;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HDRFPartitioner;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HashPartitioner;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector3;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.util.Collector;
@@ -20,15 +24,20 @@ import java.util.Random;
  * Created by zainababbas on 09/05/2017.
  */
 @SuppressWarnings("serial")
-public class ConnectedComponents {
-
+public class ConnectedComponents implements App{
+	private static String edgesInputPath = null;
+	private static String outputPath = null;
+	public String partitionPath = "";
+	private static int maxIterations = 5;
+	public int k = 4;
+	public String pStrategy = "hash";
 	// *************************************************************************
 	//     PROGRAM
 	// *************************************************************************
 
-	public static void main(String... args) throws Exception {
+	public ExecutionEnvironment exec(String... args) throws Exception {
 		if(!parseParameters(args)) {
-			return;
+			return null;
 		}
 		// Checking input parameters
 		//final ParameterTool params = ParameterTool.fromArgs(args);
@@ -56,8 +65,15 @@ public class ConnectedComponents {
 		//	DataSet<Edge<Long, NullValue>> partitionedData =
 		//			data.partitionCustom(new HashPartitioner<>(new CustomKeySelector(0)), new CustomKeySelector<>(0));
 
-
-		Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data, new InitVertices(0), env);
+		Partitioner partitioner;
+		if (pStrategy == "hdrf"){
+			partitioner = new HDRFPartitioner<>(new CustomKeySelector2(0), k, 1);
+		}else{
+			partitioner = new HashPartitioner<>(new CustomKeySelector2(0));
+		}
+		data.partitionCustom(partitioner, new CustomKeySelector2<>(0)).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE);
+		Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector2<>(0)), new InitVertices(0), env);
+		//Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data, new InitVertices(0), env);
 
 		DataSet<Long> vertices = graph.getVertices().map(new MapFunction<Vertex<Long,Long>, Long>() {
 			@Override
@@ -115,11 +131,12 @@ public class ConnectedComponents {
 		//	result.writeAsCsv(params.get("output"), "\n", " ");
 		result.writeAsCsv((outputPath), "\n", " ");
 		//vertices.print();
-		env.execute("Connected Components Example");
+//		env.execute("Connected Components Example");
 		//	} else {
 		//	System.out.println("Printing result to stdout. Use --output to specify output path.");
 		//	result.print();
 		//	}
+		return env;
 	}
 
 	// *************************************************************************
@@ -226,26 +243,20 @@ public class ConnectedComponents {
 	}
 
 
-
-	private static String edgesInputPath = null;
-	private static String outputPath = null;
-
-	private static int maxIterations = 5;
-
-
-
-	private static boolean parseParameters(String[] args) {
+	public boolean parseParameters(String[] args) {
 
 		if (args.length > 0) {
-			if(args.length != 3) {
-				System.err.println("Usage: GSASSSPHash <source vertex id>" +
-										   " <input edges path> <output path>  <num iterations>");
+			if(args.length != 6) {
+				System.err.println("Usage: CC" +
+										   " <input edges path> <partition path> <output path>  <num iterations> <number of partitions> <strategy>");
 				return false;
 			}
-
 			edgesInputPath = args[0];
-			outputPath = args[1];
-			maxIterations = Integer.parseInt(args[2]);
+			partitionPath = args[1];
+			outputPath = args[2];
+			maxIterations = Integer.parseInt(args[3]);
+			k = Integer.parseInt(args[4]);
+			pStrategy = args[5];
 
 		} else {
 			System.out.println("Executing GSASingle Source Shortest Paths example "
