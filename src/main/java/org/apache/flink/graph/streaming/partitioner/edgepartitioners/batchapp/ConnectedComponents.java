@@ -13,7 +13,7 @@ import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HDRFPartitioner;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HashPartitioner;
-import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector3;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.util.Collector;
@@ -35,7 +35,7 @@ public class ConnectedComponents implements App{
 	//     PROGRAM
 	// *************************************************************************
 
-	public ExecutionEnvironment exec(String... args) throws Exception {
+	public ExecutionEnvironment exec(ExecutionEnvironment env, String... args) throws Exception {
 		if(!parseParameters(args)) {
 			return null;
 		}
@@ -43,7 +43,7 @@ public class ConnectedComponents implements App{
 		//final ParameterTool params = ParameterTool.fromArgs(args);
 
 		// set up execution environment
-		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+//		ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
 
 		// make parameters available in the web interface
@@ -67,12 +67,12 @@ public class ConnectedComponents implements App{
 
 		Partitioner partitioner;
 		if (pStrategy == "hdrf"){
-			partitioner = new HDRFPartitioner<>(new CustomKeySelector2(0), k, 1);
+			partitioner = new HDRFPartitioner<>(new CustomKeySelector(0), k, 1);
 		}else{
-			partitioner = new HashPartitioner<>(new CustomKeySelector2(0));
+			partitioner = new HashPartitioner<>(new CustomKeySelector(0));
 		}
-		data.partitionCustom(partitioner, new CustomKeySelector2<>(0)).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE);
-		Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector2<>(0)), new InitVertices(0), env);
+		data.partitionCustom(partitioner, new CustomKeySelector<>(0)).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE);
+		Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector<>(0)), new InitVertices(0), env);
 		//Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data, new InitVertices(0), env);
 
 		DataSet<Long> vertices = graph.getVertices().map(new MapFunction<Vertex<Long,Long>, Long>() {

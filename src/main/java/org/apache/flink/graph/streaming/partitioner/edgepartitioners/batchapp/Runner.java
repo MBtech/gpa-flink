@@ -20,14 +20,13 @@ public class Runner {
         }else if (algo=="CC"){
             app = new ConnectedComponents();
         }
-
-        ExecutionEnvironment env = app.exec(remainingArgs);
+        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+//        env.setParallelism(1);
+        env = app.exec(env, remainingArgs);
         JobExecutionResult result1 = env.execute("My Flink Job1");
 
         try {
             FileWriter fw = new FileWriter(app.logPath, true); //the true will append the new data
-            //fw.write("The job took " + result.getNetRuntime(TimeUnit.SECONDS) + " seconds to execute" + "\n");//appends the string to the file
-            //fw.write("The job took " + result.getNetRuntime(TimeUnit.NANOSECONDS) + " nanoseconds to execute" + "\n");
             fw.write("The job1 took " + result1.getNetRuntime(TimeUnit.SECONDS) + " seconds to execute" + "\n");//appends the string to the file
             fw.write("The job1 took " + result1.getNetRuntime(TimeUnit.NANOSECONDS) + " nanoseconds to execute" + "\n");
             fw.close();

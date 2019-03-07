@@ -18,6 +18,8 @@ import org.apache.flink.graph.gsa.GatherFunction;
 import org.apache.flink.graph.gsa.Neighbor;
 import org.apache.flink.graph.gsa.SumFunction;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HashPartitioner;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.Hdrf;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
 import org.apache.flink.graph.streaming.partitioner.object.StoredObject;
 import org.apache.flink.graph.streaming.partitioner.object.StoredState;
@@ -48,16 +50,15 @@ public class GSASSSP implements App{
     public int k = 4;
     public String pStrategy = "hash";
 
-    public ExecutionEnvironment exec(String[] args) throws Exception {
+    public ExecutionEnvironment exec(ExecutionEnvironment env, String[] args) throws Exception {
 
         if (!parseParameters(args)) {
             return null;
         }
-        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
-
+//        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 //        env.setParallelism(1);
-        DataSet<Edge<Long, NullValue>> data = env.readTextFile(edgesInputPath).map(new MapFunction<String, Edge<Long, NullValue>>() {
+        env.setParallelism(k);
+        DataSet<Edge<Long, NullValue>> data = env.readTextFile(edgesInputPath).setParallelism(1).map(new MapFunction<String, Edge<Long, NullValue>>() {
 
             @Override
             public Edge<Long, NullValue> map(String s) {
@@ -66,22 +67,25 @@ public class GSASSSP implements App{
                 long trg = Long.parseLong(fields[1]);
                 return new Edge<>(src, trg, NullValue.getInstance());
             }
-        });
+        }).setParallelism(1);
 
-        env.setParallelism(k);
+//        env.setParallelism(1);
         //DataSet<Edge<Long, NullValue>> partitionedData =
         //			data.partitionCustom(new GreedyPartitioner<>(new CustomKeySelector2(0),k), new CustomKeySelector2<>(0));
         Partitioner partitioner;
         if (pStrategy == "hdrf"){
-            partitioner = new HDRFPartitioner<>(new CustomKeySelector2(0), k, 1);
+            partitioner = new Hdrf.HDRF<>(new CustomKeySelector(0), k, 1);
+//            partitioner = new HDRFPartitioner<>(new CustomKeySelector(0), k, 1);
         }else{
-            partitioner = new HashPartitioner<>(new CustomKeySelector2(0));
+            partitioner = new HashPartitioner<>(new CustomKeySelector(0));
         }
-        data.partitionCustom(partitioner, new CustomKeySelector2<>(0)).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE);
+        System.out.println(pStrategy);
+        data.partitionCustom(partitioner, new CustomKeySelector<>(0)).setParallelism(1).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
 
-        Graph<Long, Double, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector2<>(0)), new InitVertices(srcVertexId), env);
+        Graph<Long, Double, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector<>(0)).setParallelism(1), new InitVertices(srcVertexId), env);
         //Graph<Long, Double, NullValue> graph = Graph.fromDataSet(data, new InitVertices(srcVertexId), env);
 
+//        env.setParallelism(k);
         // Execute the GSA iteration
         Graph<Long, Double, NullValue> result = graph.runGatherSumApplyIteration(
                 new CalculateDistances(), new ChooseMinDistance(), new UpdateDistance(), maxIterations);

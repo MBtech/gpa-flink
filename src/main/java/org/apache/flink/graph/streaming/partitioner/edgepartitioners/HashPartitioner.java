@@ -1,17 +1,17 @@
 package org.apache.flink.graph.streaming.partitioner.edgepartitioners;
 
 import org.apache.flink.api.common.functions.Partitioner;
-import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.util.MathUtils;
 
 public class HashPartitioner<T> implements Partitioner<T> {
     private static final long serialVersionUID = 1L;
-    CustomKeySelector2 keySelector;
+    CustomKeySelector keySelector;
     /*	private double seed;
         private int shrink;
         private static final int MAX_SHRINK = 100;
         private int k;*/
-    public HashPartitioner(CustomKeySelector2 keySelector)
+    public HashPartitioner(CustomKeySelector keySelector)
     {
         this.keySelector = keySelector;
         //	this.seed = Math.random();

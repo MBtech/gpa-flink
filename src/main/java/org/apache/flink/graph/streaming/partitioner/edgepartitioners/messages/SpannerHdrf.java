@@ -9,6 +9,7 @@ import org.apache.flink.graph.streaming.GraphStream;
 import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.graph.streaming.WindowGraphAggregation;
 import org.apache.flink.graph.streaming.library.Spanner;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.HashPartitioner;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.graph.streaming.partitioner.object.StoredObject;
 import org.apache.flink.graph.streaming.partitioner.object.StoredState;
@@ -47,16 +48,16 @@ public class SpannerHdrf {
 
 		//edges.partitionCustom(new DbhPartitioner<>(new CustomKeySelector(0),k), new CustomKeySelector<>(0)).writeAsCsv(outputPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
 
-		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges.partitionCustom(new HDRF<>(new CustomKeySelector(0),k,1), new CustomKeySelector<>(0)),env);
+		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges.partitionCustom(new HDRF<>(new CustomKeySelector(0), k, 2), new CustomKeySelector<>(0)),env);
 
 
 		//GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges,env);
 		System.out.print(env.getParallelism());
-		DataStream<AdjacencyListGraph<Long>> spanner =graph.aggregate(new Spanner<Long, NullValue>(50000, k));
+		DataStream<AdjacencyListGraph<Long>> spanner =graph.aggregate(new Spanner<Long, NullValue>(1000, k));
 
 		//	edges.partitionCustom(new DbhPartitioner<>(new CustomKeySelector(0),k), new CustomKeySelector<>(0)).writeAsCsv(outputPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
 		spanner.flatMap(new FlattenSet())
-				.keyBy(0).timeWindow(Time.of(50000, TimeUnit.MILLISECONDS))
+				.keyBy(0).timeWindow(Time.of(1000, TimeUnit.MILLISECONDS))
 				.fold(new Tuple2<>(0l, 0l), new IdentityFold());
 
 		JobExecutionResult result = env.execute("My Flink Job");
@@ -600,7 +601,7 @@ public class SpannerHdrf {
 					   .map(new MapFunction<String, Edge<Long, NullValue>>() {
 						   @Override
 						   public Edge<Long, NullValue> map(String s) throws Exception {
-							   String[] fields = s.split("\\ ");
+							   String[] fields = s.split("\\t");
 							   long src = Long.parseLong(fields[0]);
 							   long trg = Long.parseLong(fields[1]);
 							   return new Edge<>(src, trg, NullValue.getInstance());

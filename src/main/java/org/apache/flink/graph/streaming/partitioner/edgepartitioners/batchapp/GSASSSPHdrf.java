@@ -9,6 +9,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Graph;
 import org.apache.flink.graph.Vertex;
@@ -16,6 +17,7 @@ import org.apache.flink.graph.gsa.ApplyFunction;
 import org.apache.flink.graph.gsa.GatherFunction;
 import org.apache.flink.graph.gsa.Neighbor;
 import org.apache.flink.graph.gsa.SumFunction;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
 import org.apache.flink.graph.streaming.partitioner.object.StoredObject;
 import org.apache.flink.graph.streaming.partitioner.object.StoredState;
@@ -56,9 +58,10 @@ public class GSASSSPHdrf {
         env.setParallelism(k);
         //DataSet<Edge<Long, NullValue>> partitionedData =
         //			data.partitionCustom(new GreedyPartitioner<>(new CustomKeySelector2(0),k), new CustomKeySelector2<>(0));
-
+        data.partitionCustom(new HDRF<>(new CustomKeySelector2(0), k, 1), new CustomKeySelector2<>(0)).writeAsCsv("/Volumes/Tyr/results/partitions", FileSystem.WriteMode.OVERWRITE);
         Graph<Long, Double, NullValue> graph = Graph.fromDataSet(data.partitionCustom(new HDRF<>(new CustomKeySelector2(0), k, 1), new CustomKeySelector2<>(0)), new InitVertices(srcVertexId), env);
         //Graph<Long, Double, NullValue> graph = Graph.fromDataSet(data, new InitVertices(srcVertexId), env);
+
 
         // Execute the GSA iteration
         Graph<Long, Double, NullValue> result = graph.runGatherSumApplyIteration(

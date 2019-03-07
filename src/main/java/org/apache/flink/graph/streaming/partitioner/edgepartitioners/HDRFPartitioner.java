@@ -2,7 +2,7 @@ package org.apache.flink.graph.streaming.partitioner.edgepartitioners;
 
 import org.apache.flink.api.common.functions.Partitioner;
 import org.apache.flink.graph.Edge;
-import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector2;
+import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
 import org.apache.flink.graph.streaming.partitioner.object.StoredObject;
 import org.apache.flink.graph.streaming.partitioner.object.StoredState;
 import org.apache.flink.types.NullValue;
@@ -13,13 +13,13 @@ import java.util.Random;
 ///////code for partitioner/////////
 public class HDRFPartitioner<T> implements Partitioner<T> {
     private static final long serialVersionUID = 1L;
-    CustomKeySelector2 keySelector;
+    CustomKeySelector keySelector;
     private int epsilon = 1;
     private double lamda;
     private StoredState currentState;
     private int k = 0;
 
-    public HDRFPartitioner(CustomKeySelector2 keySelector, int k , double lamda) {
+    public HDRFPartitioner(CustomKeySelector keySelector, int k , double lamda) {
         this.keySelector = keySelector;
         this.currentState = new StoredState(k);
         this.lamda = lamda;

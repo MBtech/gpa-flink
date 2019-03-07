@@ -3,6 +3,8 @@ package org.apache.flink.graph.streaming.partitioner.edgepartitioners;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.Partitioner;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.streaming.partitioner.edgepartitioners.keyselector.CustomKeySelector;
@@ -31,12 +33,14 @@ public class Hdrf {
 				return;
 			}
 
+//			ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 			StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 			env.setParallelism(1);
 			DataStream<Edge<Long, NullValue>> edges = getGraphStream(env);
-
+//			edges.writeAsCsv("outputPath", FileSystem.WriteMode.OVERWRITE);
 
 			edges.partitionCustom(new HDRF<>(new CustomKeySelector(0),k,lamda), new CustomKeySelector<>(0)).writeAsCsv(outputPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
+
 			//edges.partitionCustom(new HDRF<>(new CustomKeySelector(0),k,lamda), new CustomKeySelector<>(0))
 			//		.addSink(new TimestampingSink(outputPath)).setParallelism(k);
 
@@ -91,7 +95,7 @@ public class Hdrf {
 
 
 		///////code for partitioner/////////
-		private static class HDRF<T> implements Partitioner<T> {
+		public static class HDRF<T> implements Partitioner<T> {
 			private static final long serialVersionUID = 1L;
 			CustomKeySelector keySelector;
 			private int epsilon = 1;
@@ -226,7 +230,20 @@ public class Hdrf {
 
 			}
 		}
-
+//	public static DataSet<Edge<Long, NullValue>> getGraphStream(ExecutionEnvironment env) throws IOException {
+//
+//		return env.readTextFile(InputPath)
+//				.map(new MapFunction<String, Edge<Long, NullValue>>() {
+//					@Override
+//					public Edge<Long, NullValue> map(String s) throws Exception {
+//						String[] fields = s.split("\\t");
+//						long src = Long.parseLong(fields[0]);
+//						long trg = Long.parseLong(fields[1]);
+//						return new Edge<>(src, trg, NullValue.getInstance());
+//					}
+//				});
+//
+//	}
 
 	public static  DataStream<Edge<Long, NullValue>> getGraphStream(StreamExecutionEnvironment env) throws IOException {
 
@@ -234,7 +251,7 @@ public class Hdrf {
 					   .map(new MapFunction<String, Edge<Long, NullValue>>() {
 						   @Override
 						   public Edge<Long, NullValue> map(String s) throws Exception {
-							   String[] fields = s.split("\t");
+							   String[] fields = s.split("\\t");
 							   long src = Long.parseLong(fields[0]);
 							   long trg = Long.parseLong(fields[1]);
 							   return new Edge<>(src, trg, NullValue.getInstance());
