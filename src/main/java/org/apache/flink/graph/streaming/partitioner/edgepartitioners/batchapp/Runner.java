@@ -13,13 +13,24 @@ public class Runner {
     public static void main(String[] args) throws Exception {
         String[] remainingArgs = Arrays.copyOfRange(args, 1, args.length);
         String algo = args[0];
+        System.out.println(algo);
         App app = new GSASSSP();
-        if (algo == "GSASSSP"){
+        if (algo.equals("GSASSSP")){
             app = new GSASSSP();
-
-        }else if (algo=="CC"){
+        }else if (algo.equals("CC")){
             app = new ConnectedComponents();
+        }else if (algo.equals("PageRank")){
+            app = new PR();
+        }else if (algo.equals("CD")){
+            app = new CD();
+        }else if (algo.equals("HandA")){
+            app = new HandA();
+        }else{
+            System.err.println("Wrong algorithm Selection "+
+                    "Please select: GSASSSP, CC, PageRank, CD or HandA");
+            return;
         }
+
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 //        env.setParallelism(1);
         env = app.exec(env, remainingArgs);

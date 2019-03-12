@@ -43,7 +43,7 @@ public class GSASSSPHdrf {
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
 
-        env.setParallelism(1);
+//        env.setParallelism(1);
         DataSet<Edge<Long, NullValue>> data = env.readTextFile(edgesInputPath).map(new MapFunction<String, Edge<Long, NullValue>>() {
 
             @Override

@@ -50,6 +50,7 @@ public class ConnectedComponents implements App{
 		//env.getConfig().setGlobalJobParameters(params);
 
 		// read vertex and edge data
+		env.setParallelism(k);
 		DataSet<Edge<Long, NullValue>> data = env.readTextFile(edgesInputPath).map(new MapFunction<String, Edge<Long, NullValue>>() {
 
 			@Override
@@ -66,11 +67,12 @@ public class ConnectedComponents implements App{
 		//			data.partitionCustom(new HashPartitioner<>(new CustomKeySelector(0)), new CustomKeySelector<>(0));
 
 		Partitioner partitioner;
-		if (pStrategy == "hdrf"){
+		if (pStrategy.equals("hdrf")){
 			partitioner = new HDRFPartitioner<>(new CustomKeySelector(0), k, 1);
 		}else{
 			partitioner = new HashPartitioner<>(new CustomKeySelector(0));
 		}
+
 		data.partitionCustom(partitioner, new CustomKeySelector<>(0)).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE);
 		Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data.partitionCustom(partitioner, new CustomKeySelector<>(0)), new InitVertices(0), env);
 		//Graph<Long, Long, NullValue> graph = Graph.fromDataSet(data, new InitVertices(0), env);
@@ -258,13 +260,6 @@ public class ConnectedComponents implements App{
 			k = Integer.parseInt(args[4]);
 			pStrategy = args[5];
 
-		} else {
-			System.out.println("Executing GSASingle Source Shortest Paths example "
-									   + "with default parameters and built-in default data.");
-			System.out.println("  Provide parameters to read input data from files.");
-			System.out.println("  See the documentation for the correct format of input files.");
-			System.out.println("Usage: GSASSSPHash <source vertex id>" +
-									   " <input edges path> <output path> <num iterations> ");
 		}
 		return true;
 	}

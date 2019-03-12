@@ -620,7 +620,7 @@ public class SpannerHash {
 					   .map(new MapFunction<String, Edge<Long, NullValue>>() {
 						   @Override
 						   public Edge<Long, NullValue> map(String s) throws Exception {
-							   String[] fields = s.split("\\,");
+							   String[] fields = s.split("\\t");
 							   long src = Long.parseLong(fields[0]);
 							   long trg = Long.parseLong(fields[1]);
 							   return new Edge<>(src, trg, NullValue.getInstance());

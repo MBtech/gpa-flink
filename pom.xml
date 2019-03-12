@@ -78,7 +78,7 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>org.apache.flink.graph.streaming.partitioner.edgepartitioners.batchapp.GSASSSPHdrf</mainClass>
+                        <mainClass>org.apache.flink.graph.streaming.partitioner.edgepartitioners.batchapp.Runner</mainClass>
                     </manifest>
                 </archive>
                 <descriptorRefs>

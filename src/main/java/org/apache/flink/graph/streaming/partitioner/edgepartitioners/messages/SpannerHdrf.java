@@ -48,7 +48,7 @@ public class SpannerHdrf {
 
 		//edges.partitionCustom(new DbhPartitioner<>(new CustomKeySelector(0),k), new CustomKeySelector<>(0)).writeAsCsv(outputPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
 
-		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges.partitionCustom(new HDRF<>(new CustomKeySelector(0), k, 2), new CustomKeySelector<>(0)),env);
+		GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges.partitionCustom(new HDRF<>(new CustomKeySelector(0), k, 1), new CustomKeySelector<>(0)),env);
 
 
 		//GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges,env);

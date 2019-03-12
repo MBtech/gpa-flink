@@ -73,12 +73,12 @@ public class GSASSSP implements App{
         //DataSet<Edge<Long, NullValue>> partitionedData =
         //			data.partitionCustom(new GreedyPartitioner<>(new CustomKeySelector2(0),k), new CustomKeySelector2<>(0));
         Partitioner partitioner;
-        if (pStrategy == "hdrf"){
-            partitioner = new Hdrf.HDRF<>(new CustomKeySelector(0), k, 1);
-//            partitioner = new HDRFPartitioner<>(new CustomKeySelector(0), k, 1);
+        if (pStrategy.equals("hdrf")){
+            partitioner = new HDRFPartitioner<>(new CustomKeySelector(0), k, 1);
         }else{
             partitioner = new HashPartitioner<>(new CustomKeySelector(0));
         }
+
         System.out.println(pStrategy);
         data.partitionCustom(partitioner, new CustomKeySelector<>(0)).setParallelism(1).writeAsCsv(partitionPath, FileSystem.WriteMode.OVERWRITE).setParallelism(k);
 
@@ -94,7 +94,7 @@ public class GSASSSP implements App{
         DataSet<Vertex<Long, Double>> singleSourceShortestPaths = result.getVertices();
 
         if (fileOutput) {
-            singleSourceShortestPaths.writeAsCsv(outputPath, "\n", ",");
+            singleSourceShortestPaths.writeAsCsv(outputPath, "\n", ",", FileSystem.WriteMode.OVERWRITE);
 
             // since file sinks are lazy, we trigger the execution explicitly
         } else {
@@ -186,13 +186,6 @@ public class GSASSSP implements App{
             maxIterations = Integer.parseInt(args[5]);
             k = Integer.parseInt(args[6]);
             pStrategy = args[7];
-        } else {
-            System.out.println("Executing GSASingle Source Shortest Paths example "
-                    + "with default parameters and built-in default data.");
-            System.out.println("  Provide parameters to read input data from files.");
-            System.out.println("  See the documentation for the correct format of input files.");
-            System.out.println("Usage: GSASSSPHash <source vertex id>" +
-                    " <input edges path> <output path> <log path><num iterations> <no. of partitions>");
         }
         return true;
     }
